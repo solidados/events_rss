@@ -128,3 +128,8 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# OS auto created files
+.DS_Store
+# VSCode auto created files
+.vscode
