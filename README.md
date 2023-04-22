@@ -1,4 +1,5 @@
 # События (лекция)
+[** источник](https://www.youtube.com/watch?v=VJEpE6DaOYo)
 ## Events
 > • это действия, или случаи, возникающие в программируемой вами системе, о которых система сообза9ет вам для того, чтобы вы могли с ними взраимодействовать. (_MDN_)  
 > Другими словами – это один из способов взаимодействия объектов, компонентов, или частей приложения.
@@ -30,7 +31,33 @@ _Другое определение, более абстрактное:_
 • поскольку в JS функции – это объекты, то можно передавать их другим функциям в качестве аргументов.  
 • чаще всего, callback() используются для продолжения выполнения кода после завершения асинхронных операций.  
 
-[Пример Callback()](https://github.com/solidados/events_rss/blob/callbacks/callbacks.js)
+```javascript
+// --- Пример Callback()
+function summ(numOne, numTwo) {
+  console.log(`${numOne} + ${numTwo}`);
+  return numOne + numTwo;
+}
+
+function substract(numOne, numTwo) {
+  console.log(`${numOne} - ${numTwo}`);
+  return numOne - numTwo;
+}
+
+function action(numbers, callbacks) {
+  let result = numbers[0];
+  for (let i = 0; i < numbers.length; i++) {
+    const currentCallback = callbacks[i - 1];
+    const number = numbers[i];
+    result = currentCallback(result, number);
+    console.log(`${result}`);
+  }
+  return result;
+}
+const numbers = [1, 2, 3, 4];
+const callbacks = [summ, substract, summ];
+const result = action(numbers, callbacks);
+console.log(`Result = ${result}`);
+```
 
 ## Асинхронное программирование  
 > • **Асинхронность** – это концепция, заключающаяся в том, что результат выполнения функции доступен не сразу, а через некоторое время в виде некоторого асинхронного вызова, нарушаюшего обычный, последовательный порядок выполнения. (_MDN_)  
@@ -39,7 +66,22 @@ _Другое определение, более абстрактное:_
 – это ситуация, при которой ваш алгоритм разветвляется, и одна его часть продлжает синхронно выполненяться, а другая ожидает результата завершения какого-либо действия, и начнёт своё выполнение только после этого.  
 Механизм определения последовательности обработки этих "веток" регулируется циклом событий.  
 Необходимость асинхронности обусловлена однопоточностью языка в браузерной среде исполнения.  
-[Пример синхронного исполнения](https://github.com/solidados/events_rss/blob/callbacks/callbacks.js)
+```javascript
+// --- Пример Синхронного выполнения кода
+
+function summ() {
+  let counter = 0;
+  for (let i = 0; i < 100000; i++) {
+    // какие-то вычисления
+    counter += 1;
+  }
+  console.log(`Завершение длительных вычислений. (2)`, counter);
+}
+console.log("Начало выполнения кода. (1)");
+summ();
+console.log("Завершение выполнения кода (3)");
+
+```
 
 ### Где возникает асинхронный код
 - в файлах таймеров и интервалов
@@ -47,7 +89,37 @@ _Другое определение, более абстрактное:_
 - в обработчиках событий
 - в объектах Promise
 - в конструкциях asyn/await  
-  
+
+```javascript
+// --- Пример Асинхронного выполнения кода
+
+async function summ() {
+  let result = await (function () {
+    let counter = 0;
+    for (let i = 0; i < 100000; i++) {
+      // какие-то вычисления
+      counter += 1;
+    }
+    return counter;
+  })();
+  console.log("Завершение длительных вычислений. (2)", result);
+}
+console.log("Начало выполнения кода. (1)");
+summ();
+console.log("Завершение выполнения кода. (3)");
+```  
+```javascript
+// --- Пример Асинхронного Исполнения функции
+
+function timer() {
+  setTimeout(() => {
+    console.log("Завершение длительных вычислений. (2)");
+  }, 1000);
+}
+console.log("Начало выполнения кода. (1)");
+timer();
+console.log("Завершение выполнения кода. (3)");
+```
 # Обработчики событий
 Способы указания обработчика событий:  
 • Атрибутом в HTML разметке с указанием функции-обработчика
@@ -79,7 +151,7 @@ button.onclick = function propertyHandler() {
 let button = document.getElementById('buttonProperty');
 button.onclick = null;
 ```  
-• С использованием метода addEventListener() тремя способами:
+• С использованием метода `addEventListener()` тремя способами:
 ##### **Способ 1 "Стрелочная функция"**
 ```javascript
 let button = document.getElementById('buttonTargetFunc');
@@ -105,3 +177,90 @@ const clickObject = {
 let button = document.getElementById('buttonTargetFunc');
 button.addEventListener('click', clickObject);
 ```  
+## Множество обработчиков
+```javascript
+let button = document.getElementById('buttonManyListener');
+button.addEventListener('click', () => {
+  console.log('Первый обработчик (1)')
+});
+button.addEventListener('click', () => {
+  console.log('Второй обработчик (2)')
+});
+button.addEventListener('click', () => {
+  console.log('Третий обработчик (3)')
+});
+```  
+Обработка событий произойдёт в том порядке, в котором происходила регистрация слушателей.  
+## Разные события элемента
+```javascript
+let button = document.getElementById('buttonDifferentEvents');
+button.addEventListener('click', () => {
+  console.log('Первый обработчик (1)')
+});
+button.addEventListener('mouseenter', () => {
+  console.log('Второй обработчик (2)')
+});
+button.addEventListener('mouseout', () => {
+  console.log('Третий обработчик (3)')
+});
+```  
+## Отменить обработчик события
+За удаление конкретного события отвечает метод `.removeEventListener()`
+```javascript
+let button = document.getElementById('buttonRemoveFunc');
+button.addEventListener('mouseenter', mouseEnterHandler)
+button.addEventListener('mouseout', mouseOutHandler)
+function mouseEnterHandler() {
+  console.log('Первый обработчик (1)');
+}
+function mouseOutHandler() {
+  console.log('Второй обработчик (2)');
+}
+button.addEventListener('click', () => {
+  button.removeEventListener('mouseenter', mouseEnterHandler);
+});
+```  
+С удаление обработчика события есть некоторые нюансы:  
+```javascript
+let button = document.getElementById('buttonRemoveFunc');
+button.addEventListener('mouseenter', () => {
+  console.log('Первый обработчик (1)');
+});
+button.addEventListener('mouseout', mouseOutHandler);
+function mouseOutHandler() {
+  console.log('Второй обработчик (2)');
+}
+button.addEventListener('click', () => {
+  button.removeEventListener('mouseenter', () => {
+    console.log('Первый обработчик (1)');
+  });
+  button.removeEventListener('mouseout', mouseOutHandler);
+});
+```  
+Здесь происхоит следующее:  
+обработчик `mouseout` удаляется по `click`, однако `mouseenter` остаётся.  
+Это происходит потому, что метод `removeEventListener` просит, чтобы мы передавали ему именнованную функцию. То есть, если был повешен обработчик событий с анонимной, или стрелочной функцией, то убрать обработчик события не получится.
+## Слушатели события (резюме)
+- Атрибут в HTML-разметке
+- Свойство DOM-элемента
+- Регистрация слушателя
+- На одном элементе одно событие может обрабатываться несколько раз
+- На одном элементе возникают разные события
+- Обработчиком события может быть анонимная, стрелочная, или именнованная функция
+- Обработчиком может быть Объект, который реализоваывает метод `handleEvent()`
+- Обработчики исполняются в порядке их регистрации
+- Удалить обработчик с анонимной или стрелочной функцией нельзя
+
+# Всплытие и перехват событий
+• Всплытие и перехват событий – это два механизма, описывающих то, что происходит, когда два обработчика одного и того же события активируются на одном элменте. (_MDN_)  
+
+• **Событие** имеет три стадии:
+- погружение
+- целевая
+- всплытие  
+
+• Событие возникает на корневом элементе страницы  
+• Погружается через все дочерние элементы до целевого элемента  
+• Выполняется на целевом элементе  
+• Всплывает через все родительские элементы до корневого элемента  
+• Прекращает своё существование
